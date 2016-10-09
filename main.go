@@ -6,19 +6,36 @@ import (
 	//"log"
 )
 
-type cell_state int
-
 var board [n][n]cell_state
+
+type cell_state int
 
 const (
 	EMPTY        cell_state = 0
 	WHITE        cell_state = 5
 	BLACK        cell_state = -5
-	INACCESSIBLE cell_state = -1 // Not available
+	INACCESSIBLE cell_state = -1
 	BORDER       cell_state = -2
 )
 
+type board_state int 
+
+const (
+	PUT_WHITE board_state = 1
+	PUT_BLACK board_state = 2
+	DELETE_WHITE board_state = 3
+	DELETE_BLACK board_state = 4
+	MOVE_WHITE board_state = 5
+	MOVE_BLACK board_state = 6
+	CLOSE board_state = 7
+)
+
 const n = 9 // board_size
+
+type coordinates struct {
+  x int
+  y int
+}
 
 func init_board() {
 	for i := 0; i < n; i++ {
@@ -103,25 +120,87 @@ func check_line(h int, w int) int {
 	return res
 }
 
+func put_white() coordinates {
+	fmt.Println("Turn white_player")
+	fmt.Println("Write coordinates (x,y) to put piece")
+	coord := coordinates{1, 1}
+	return coord
+}
+
+func put_black() coordinates {
+	fmt.Println("Turn black_player")
+	fmt.Println("Write coordinates (x,y) to put piece")
+	coord := coordinates{1, 1}
+	return coord
+}
+
+func delete_white() coordinates {
+	fmt.Println("Turn black_player")
+	fmt.Println("Write coordinates (x,y) to delete_black")
+	coord := coordinates{1, 1}
+	return coord
+}
+
+func delete_black() coordinates {
+	fmt.Println("Turn white_player")
+	fmt.Println("Write coordinates (x,y) to delete_black")
+	coord := coordinates{1, 1}
+	return coord
+}
+
+func move_white() coordinates {
+	fmt.Println("Turn black_player")
+	fmt.Println("Write coordinates (x,y) of piece which you want to move")
+	coord := coordinates{1, 1}
+	return coord
+}
+
+func move_black() coordinates {
+	fmt.Println("Turn black_player")
+	fmt.Println("Write coordinates (x,y) of piece which you want to move")
+	coord := coordinates{1, 1}
+	return coord
+}
+
 func main() {
 	init_board()
-	/*board[4][5] = 5
-	board[4][6] = 5
-	board[4][7] = 5
-	board[4][1] = 5
-	board[4][2] = 5
-	board[4][3] = 5
-	board[3][3] = 5
-	board[5][3] = 5
-	board[7][1] = 5
-	board[1][1] = 5
-	board[1][4] = 5
-	board[1][7] = 5
-	/*symbol := '_'
-	for symbol != 'q' {
+	current_state := PUT_WHITE
+	for current_state != CLOSE {
 		print(board)
-		fmt.Scanf("%c", &symbol) // _, err :=
-	}*/
+		switch current_state {
+			case PUT_WHITE:
+				coord := put_white()
+				if check_line(coord.x, coord.y) == 1 {
+					current_state = DELETE_BLACK // todo
+				}
+			case PUT_BLACK:
+				coord := put_black()
+				if check_line(coord.x, coord.y) == 1 {
+					current_state = DELETE_WHITE // todo
+				}
+			case DELETE_WHITE:
+				delete_white()
+				current_state = PUT_WHITE // todo
+			case DELETE_BLACK:
+				delete_black()
+				current_state = PUT_BLACK // todo
+			case MOVE_WHITE:
+				coord := move_white()
+				if check_line(coord.x, coord.y) == 1 {
+					current_state = MOVE_BLACK
+				}
+			case MOVE_BLACK:
+				coord := move_black()
+				if check_line(coord.x, coord.y) == 1 { // todo for two
+					current_state = MOVE_WHITE
+				}
+		}
+		symbol := '_'
+		fmt.Scanf("%c", &symbol)
+		if symbol == 'q' {
+			current_state = CLOSE
+		}
+	}
 	print(board)
 	fmt.Print(check_line(1, 1))
 }
