@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	//"io/ioutil"
 	//"log"
 )
@@ -18,23 +19,23 @@ const (
 	BORDER       cell_state = -2
 )
 
-type board_state int 
+type board_state int
 
 const (
-	PUT_WHITE board_state = 1
-	PUT_BLACK board_state = 2
+	PUT_WHITE    board_state = 1
+	PUT_BLACK    board_state = 2
 	DELETE_WHITE board_state = 3
 	DELETE_BLACK board_state = 4
-	MOVE_WHITE board_state = 5
-	MOVE_BLACK board_state = 6
-	CLOSE board_state = 7
+	MOVE_WHITE   board_state = 5
+	MOVE_BLACK   board_state = 6
+	CLOSE        board_state = 7
 )
 
 const n = 9 // board_size
 
 type coordinates struct {
-  x int
-  y int
+	x int
+	y int
 }
 
 func init_board() {
@@ -62,7 +63,7 @@ func print(arr [n][n]cell_state) {
 	}
 }
 
-func check_line(h int, w int) int {
+func check_line(w int, h int) int {
 	res := 0
 	cnt := 0
 	if w != n/2 {
@@ -148,52 +149,158 @@ func delete_black() coordinates {
 	return coord
 }
 
-func move_white() coordinates {
-	fmt.Println("Turn black_player")
-	fmt.Println("Write coordinates (x,y) of piece which you want to move")
-	coord := coordinates{1, 1}
-	return coord
-}
+func move(current_player cell_state) coordinates {
+	var x, y, new_x, new_y int
+	command := ""
+	var color string
 
-func move_black() coordinates {
-	fmt.Println("Turn black_player")
-	fmt.Println("Write coordinates (x,y) of piece which you want to move")
-	coord := coordinates{1, 1}
+	if current_player == WHITE {
+		color = "White"
+	} else {
+		color = "Black"
+	}
+
+	for board[y][x] != current_player {
+		fmt.Println(color + "Player turn")
+		fmt.Println("Write coordinates (x,y) of piece which you want to move")
+		fmt.Print("X: ")
+		fmt.Scanf("%d", &x)
+		fmt.Print("Y: ")
+		fmt.Scanf("%d", &y)
+		if board[y][x] != current_player {
+			fmt.Println("Wrong coordinates")
+		}
+	}
+OUTER:
+	for strings.Compare(command, "yes") != 0 {
+		fmt.Println(color + "Player turn")
+		fmt.Println("Write where you want to move your piece (up, down, right, left)")
+		way := ""
+		fmt.Scanf("%s", &way)
+		switch way {
+		case "up":
+			for i := 1; i <= y; i++ {
+				if board[y-i][x] == BLACK || board[y-i][x] == WHITE {
+					fmt.Println("Cell is occupied")
+					continue OUTER
+				} else if board[y-i][x] == BORDER || (y-i == n/2 && x == n/2) {
+					fmt.Println("Wrong way")
+					continue OUTER
+				} else if board[y-i][x] == EMPTY {
+					new_y = y - i
+					new_x = x
+					break
+				}
+
+			}
+		case "down":
+			for i := 1; i <= n-y; i++ {
+				if board[y+i][x] == BLACK || board[y+i][x] == WHITE {
+					fmt.Println("Cell is occupied")
+					continue OUTER
+				} else if board[y+i][x] == BORDER || (y+i == n/2 && x == n/2) {
+					fmt.Println("Wrong way")
+					continue OUTER
+				} else if board[y+i][x] == EMPTY {
+					new_y = y + i
+					new_x = x
+					break
+				}
+
+			}
+		case "right":
+			for i := 1; i <= n-x; i++ {
+				if board[y][x+i] == BLACK || board[y][x+i] == WHITE {
+					fmt.Println("Cell is occupied")
+					continue OUTER
+				} else if board[y][x+i] == BORDER || (y == n/2 && x+i == n/2) {
+					fmt.Println("Wrong way")
+					continue OUTER
+				} else if board[y][x+i] == EMPTY {
+					new_x = x + i
+					new_y = y
+					break
+				}
+
+			}
+		case "left":
+			for i := 1; i <= x; i++ {
+				if board[y][x-i] == BLACK || board[y][x-i] == WHITE {
+					fmt.Println("Cell is occupied")
+					continue OUTER
+				} else if board[y][x-i] == BORDER || (y == n/2 && x-i == n/2) {
+					fmt.Println("Wrong way")
+					continue OUTER
+				} else if board[y][x-i] == EMPTY {
+					new_x = x - i
+					new_y = y
+					break
+				}
+			}
+		default:
+			fmt.Println("Wrong way")
+			continue OUTER
+		}
+
+		board[new_y][new_x] = current_player //To show the result of the move (not necessary)
+		board[y][x] = 0
+		print(board)
+
+		fmt.Println(color + "Player turn")
+		fmt.Println("Type 'yes' to confirm your move")
+
+		fmt.Scanf("%s", &command)
+		if strings.Compare(command, "yes") != 0 {
+			board[new_y][new_x] = 0 //Recovering board state if the move is not confirmed
+			board[y][x] = current_player
+			print(board)
+		}
+	}
+
+	/*if strings.Compare(command, "yes") != 0 {
+		return move_white()
+	}*/
+
+	coord := coordinates{new_x, new_y}
 	return coord
 }
 
 func main() {
 	init_board()
-	current_state := PUT_WHITE
+	current_state := MOVE_WHITE
 	for current_state != CLOSE {
 		print(board)
 		switch current_state {
-			case PUT_WHITE:
-				coord := put_white()
-				if check_line(coord.x, coord.y) == 1 {
-					current_state = DELETE_BLACK // todo
-				}
-			case PUT_BLACK:
-				coord := put_black()
-				if check_line(coord.x, coord.y) == 1 {
-					current_state = DELETE_WHITE // todo
-				}
-			case DELETE_WHITE:
-				delete_white()
-				current_state = PUT_WHITE // todo
-			case DELETE_BLACK:
-				delete_black()
-				current_state = PUT_BLACK // todo
-			case MOVE_WHITE:
-				coord := move_white()
-				if check_line(coord.x, coord.y) == 1 {
-					current_state = MOVE_BLACK
-				}
-			case MOVE_BLACK:
-				coord := move_black()
-				if check_line(coord.x, coord.y) == 1 { // todo for two
-					current_state = MOVE_WHITE
-				}
+		case PUT_WHITE:
+			coord := put_white()
+			if check_line(coord.x, coord.y) == 1 {
+				current_state = DELETE_BLACK // todo
+			}
+		case PUT_BLACK:
+			coord := put_black()
+			if check_line(coord.x, coord.y) == 1 {
+				current_state = DELETE_WHITE // todo
+			}
+		case DELETE_WHITE:
+			delete_white()
+			current_state = PUT_WHITE // todo
+		case DELETE_BLACK:
+			delete_black()
+			current_state = PUT_BLACK // todo
+		case MOVE_WHITE:
+			coord := move(WHITE)
+			if check_line(coord.x, coord.y) == 1 {
+				current_state = DELETE_BLACK
+			} else {
+				current_state = MOVE_BLACK
+			}
+		case MOVE_BLACK:
+			coord := move(BLACK)
+			if check_line(coord.x, coord.y) == 1 { // todo for two
+				current_state = DELETE_WHITE
+			} else {
+				current_state = MOVE_WHITE
+			}
 		}
 		symbol := '_'
 		fmt.Scanf("%c", &symbol)
