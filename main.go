@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
-	//"io/ioutil"
-	//"log"
+	"os/exec"
+	"os"
 )
 
 var board [n][n]cell_state
@@ -36,6 +36,12 @@ const n = 9 // board_size
 type coordinates struct {
 	x int
 	y int
+}
+
+func clear(){
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
 
 func init_board() {
@@ -121,31 +127,57 @@ func check_line(w int, h int) int {
 	return res
 }
 
-func put_white() coordinates {
-	fmt.Println("Turn white_player")
-	fmt.Println("Write coordinates (x,y) to put piece")
-	coord := coordinates{1, 1}
+func put(current_player cell_state) coordinates {
+	var color string
+	if current_player == WHITE {
+		color = "White"
+	} else {
+		color = "Black"
+	}
+	var x, y int = 0, 0
+	flag := true
+	for flag {
+		fmt.Println(color + "Player turn")
+		fmt.Println("Write coordinates (x,y) to put piece")
+		fmt.Print("X: ")
+		fmt.Scanf("%d", &x)
+		fmt.Print("Y: ")
+		fmt.Scanf("%d", &y)
+		if x >= n || y >= n || x < 0 || y < 0 || board[y][x] != EMPTY {
+			fmt.Println("Wrong coordinates")
+		} else {
+			flag = false
+		}
+	}
+	board[y][x] = current_player
+	coord := coordinates{x, y}
 	return coord
 }
 
-func put_black() coordinates {
-	fmt.Println("Turn black_player")
-	fmt.Println("Write coordinates (x,y) to put piece")
-	coord := coordinates{1, 1}
-	return coord
-}
-
-func delete_white() coordinates {
-	fmt.Println("Turn black_player")
-	fmt.Println("Write coordinates (x,y) to delete_black")
-	coord := coordinates{1, 1}
-	return coord
-}
-
-func delete_black() coordinates {
-	fmt.Println("Turn white_player")
-	fmt.Println("Write coordinates (x,y) to delete_black")
-	coord := coordinates{1, 1}
+func delete(current_opponent cell_state) coordinates { // todo if 3 piece are together?
+	var color string
+	if current_opponent == BLACK {
+		color = "White"
+	} else {
+		color = "Black"
+	}
+	var x, y int = 0, 0
+	flag := true
+	for flag {
+		fmt.Println(color + "Player turn")
+		fmt.Println("Write coordinates (x,y) to delete opponent piece")
+		fmt.Print("X: ")
+		fmt.Scanf("%d", &x)
+		fmt.Print("Y: ")
+		fmt.Scanf("%d", &y)
+		if x >= n || y >= n || x < 0 || y < 0 || board[y][x] != current_opponent {
+			fmt.Println("Wrong coordinates")
+		} else {
+			flag = false
+		}
+	}
+	board[y][x] = EMPTY
+	coord := coordinates{x, y}
 	return coord
 }
 
@@ -160,15 +192,18 @@ func move(current_player cell_state) coordinates {
 		color = "Black"
 	}
 
-	for board[y][x] != current_player {
+	flag := true
+	for flag {
 		fmt.Println(color + "Player turn")
 		fmt.Println("Write coordinates (x,y) of piece which you want to move")
 		fmt.Print("X: ")
 		fmt.Scanf("%d", &x)
 		fmt.Print("Y: ")
 		fmt.Scanf("%d", &y)
-		if board[y][x] != current_player {
+		if x >= n || y >= n || x < 0 || y < 0 ||  board[y][x] != current_player {
 			fmt.Println("Wrong coordinates")
+		} else {
+			flag = false
 		}
 	}
 OUTER:
@@ -221,7 +256,6 @@ OUTER:
 					new_y = y
 					break
 				}
-
 			}
 		case "left":
 			for i := 1; i <= x; i++ {
@@ -266,37 +300,85 @@ OUTER:
 }
 
 func main() {
+	clear()
 	init_board()
-	current_state := MOVE_WHITE
+	board[1][1] = WHITE
+	current_state := PUT_WHITE
+	number_of_piece := 9
 	for current_state != CLOSE {
 		print(board)
 		switch current_state {
 		case PUT_WHITE:
-			coord := put_white()
-			if check_line(coord.x, coord.y) == 1 {
-				current_state = DELETE_BLACK // todo
+			coord := put(WHITE)
+			cnt := check_line(coord.x, coord.y)
+			if cnt > 0 {
+				if cnt == 2 {
+					clear()
+					print(board)
+					delete(BLACK)
+				}
+				current_state = DELETE_BLACK
+			} else {
+				if number_of_piece > 0 {
+					current_state = PUT_BLACK
+					} else {
+						current_state = MOVE_BLACK
+					}
 			}
 		case PUT_BLACK:
-			coord := put_black()
-			if check_line(coord.x, coord.y) == 1 {
-				current_state = DELETE_WHITE // todo
+			coord := put(BLACK)
+			cnt := check_line(coord.x, coord.y)
+			number_of_piece--
+			if cnt > 0 {
+				if cnt == 2 {
+					clear()
+					print(board)
+					delete(WHITE)
+				}
+				current_state = DELETE_WHITE
+			} else {
+				if number_of_piece > 0 {
+					current_state = PUT_WHITE
+					} else {
+						current_state = MOVE_WHITE
+					}
 			}
 		case DELETE_WHITE:
-			delete_white()
-			current_state = PUT_WHITE // todo
+			delete(WHITE)
+			if number_of_piece > 0 {
+				current_state = PUT_WHITE
+			} else {
+				current_state = MOVE_WHITE
+			}
 		case DELETE_BLACK:
-			delete_black()
-			current_state = PUT_BLACK // todo
+			delete(BLACK)
+			if number_of_piece > 0 {
+				current_state = PUT_BLACK
+			} else {
+				current_state = MOVE_BLACK
+			}
 		case MOVE_WHITE:
 			coord := move(WHITE)
-			if check_line(coord.x, coord.y) == 1 {
+			cnt := check_line(coord.x, coord.y)
+			if cnt > 0 {
+				if cnt == 2 {
+					clear()
+					print(board)
+					delete(BLACK)
+				}
 				current_state = DELETE_BLACK
 			} else {
 				current_state = MOVE_BLACK
 			}
 		case MOVE_BLACK:
 			coord := move(BLACK)
-			if check_line(coord.x, coord.y) == 1 { // todo for two
+			cnt := check_line(coord.x, coord.y)
+			if cnt > 0 {
+				if cnt == 2 {
+					clear()
+					print(board)
+					delete(WHITE)
+				}
 				current_state = DELETE_WHITE
 			} else {
 				current_state = MOVE_WHITE
@@ -307,7 +389,6 @@ func main() {
 		if symbol == 'q' {
 			current_state = CLOSE
 		}
+		clear()
 	}
-	print(board)
-	fmt.Print(check_line(1, 1))
 }
