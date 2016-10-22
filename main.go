@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strings"
-	"os/exec"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 var board [n][n]cell_state
@@ -38,7 +38,7 @@ type coordinates struct {
 	y int
 }
 
-func clear(){
+func clear() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
@@ -200,7 +200,7 @@ func move(current_player cell_state) coordinates {
 		fmt.Scanf("%d", &x)
 		fmt.Print("Y: ")
 		fmt.Scanf("%d", &y)
-		if x >= n || y >= n || x < 0 || y < 0 ||  board[y][x] != current_player {
+		if x >= n || y >= n || x < 0 || y < 0 || board[y][x] != current_player {
 			fmt.Println("Wrong coordinates")
 		} else {
 			flag = false
@@ -209,7 +209,7 @@ func move(current_player cell_state) coordinates {
 OUTER:
 	for strings.Compare(command, "yes") != 0 {
 		fmt.Println(color + "Player turn")
-		fmt.Println("Write where you want to move your piece (up, down, right, left)")
+		fmt.Println("Write where you want to move your piece (up, down, right, left) or type 'change' if you want to choose other piece")
 		way := ""
 		fmt.Scanf("%s", &way)
 		switch way {
@@ -271,6 +271,8 @@ OUTER:
 					break
 				}
 			}
+		case "change":
+			return move(current_player)
 		default:
 			fmt.Println("Wrong way")
 			continue OUTER
@@ -302,7 +304,6 @@ OUTER:
 func main() {
 	clear()
 	init_board()
-	board[1][1] = WHITE
 	current_state := PUT_WHITE
 	number_of_piece := 9
 	for current_state != CLOSE {
@@ -321,9 +322,9 @@ func main() {
 			} else {
 				if number_of_piece > 0 {
 					current_state = PUT_BLACK
-					} else {
-						current_state = MOVE_BLACK
-					}
+				} else {
+					current_state = MOVE_BLACK
+				}
 			}
 		case PUT_BLACK:
 			coord := put(BLACK)
@@ -339,9 +340,9 @@ func main() {
 			} else {
 				if number_of_piece > 0 {
 					current_state = PUT_WHITE
-					} else {
-						current_state = MOVE_WHITE
-					}
+				} else {
+					current_state = MOVE_WHITE
+				}
 			}
 		case DELETE_WHITE:
 			delete(WHITE)
