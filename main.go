@@ -371,6 +371,7 @@ func main() {
 	current_state := PUT_WHITE
 	number_of_piece := 9
 	for current_state != CLOSE {
+		print(board)
 		if check_end(WHITE) && current_state != PUT_BLACK && current_state != PUT_WHITE {
 			fmt.Println("Black player has won. The game will be restarted.")
 			init_board()
@@ -380,7 +381,6 @@ func main() {
 			init_board()
 			current_state = PUT_WHITE
 		}
-		print(board)
 		switch current_state {
 		case PUT_WHITE:
 			coord := put(WHITE)
