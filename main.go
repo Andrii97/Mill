@@ -56,7 +56,7 @@ func init_board() {
 			}
 		}
 	}
-	board[n/2][n/2] = INACCESSIBLE
+	board[n/2][n/2] = BORDER
 }
 
 func print(arr [n][n]cell_state) {
@@ -301,6 +301,74 @@ OUTER:
 	return coord
 }
 
+func isBlocked(x int, y int) bool {
+	cnt := 0
+	i := 1
+
+	for board[y][x+i] == -1 {
+		i++
+	}
+	if board[y][x+i] == 0 {
+		cnt++
+	}
+	i = 1
+
+	for board[y][x-i] == -1 {
+		i++
+	}
+	if board[y][x-i] == 0 {
+		cnt++
+	}
+	i = 1
+
+	for board[y+i][x] == -1 {
+		i++
+	}
+	if board[y+i][x] == 0 {
+		cnt++
+	}
+	i = 1
+
+	for board[y-i][x] == -1 {
+		i++
+	}
+	if board[y-i][x] == 0 {
+		cnt++
+	}
+	i = 1
+
+	if cnt == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func check_end(next_player cell_state) int {
+	pieces_cnt := 0
+	moves_cnt := 0
+
+	for i := 1; i < n-1; i++ {
+		for j := 1; j < n-1; j++ {
+			if board[i][j] == next_player {
+				pieces_cnt++
+				if !isBlocked(j, i) {
+					moves_cnt++
+				}
+			}
+		}
+	}
+
+	if pieces_cnt < 3 || moves_cnt == 0 {
+		if next_player == BLACK {
+			return 1
+		} else {
+			return 2
+		}
+	}
+	return 0
+}
+
 func main() {
 	clear()
 	init_board()
@@ -348,15 +416,25 @@ func main() {
 			delete(WHITE)
 			if number_of_piece > 0 {
 				current_state = PUT_WHITE
-			} else {
+			} else if check_end(WHITE) != 2 {
 				current_state = MOVE_WHITE
+			} else {
+				fmt.Println("Black player has won. The game will be restarted")
+				clear()
+				init_board()
+				current_state = PUT_WHITE
 			}
 		case DELETE_BLACK:
 			delete(BLACK)
 			if number_of_piece > 0 {
 				current_state = PUT_BLACK
-			} else {
+			} else if check_end(BLACK) != 1 {
 				current_state = MOVE_BLACK
+			} else {
+				fmt.Println("White player has won. The game will be restarted")
+				clear()
+				init_board()
+				current_state = PUT_WHITE
 			}
 		case MOVE_WHITE:
 			coord := move(WHITE)

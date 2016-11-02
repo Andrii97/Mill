@@ -1,7 +1,0 @@
-package main
-
-import "testing"
-
-func TestMovement(t *testing.T) {
-	
-}
