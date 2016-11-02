@@ -344,7 +344,7 @@ func isBlocked(x int, y int) bool {
 	}
 }
 
-func check_end(next_player cell_state) int {
+func check_end(next_player cell_state) bool {
 	pieces_cnt := 0
 	moves_cnt := 0
 
@@ -360,13 +360,9 @@ func check_end(next_player cell_state) int {
 	}
 
 	if pieces_cnt < 3 || moves_cnt == 0 {
-		if next_player == BLACK {
-			return 1
-		} else {
-			return 2
-		}
+		return true
 	}
-	return 0
+	return false
 }
 
 func main() {
@@ -375,6 +371,15 @@ func main() {
 	current_state := PUT_WHITE
 	number_of_piece := 9
 	for current_state != CLOSE {
+		if check_end(WHITE) && current_state != PUT_BLACK && current_state != PUT_WHITE {
+			fmt.Println("Black player has won. The game will be restarted.")
+			init_board()
+			current_state = PUT_WHITE
+		} else if check_end(BLACK) && current_state != PUT_BLACK && current_state != PUT_WHITE {
+			fmt.Println("White player has won. The game will be restarted.")
+			init_board()
+			current_state = PUT_WHITE
+		}
 		print(board)
 		switch current_state {
 		case PUT_WHITE:
@@ -416,25 +421,15 @@ func main() {
 			delete(WHITE)
 			if number_of_piece > 0 {
 				current_state = PUT_WHITE
-			} else if check_end(WHITE) != 2 {
-				current_state = MOVE_WHITE
 			} else {
-				fmt.Println("Black player has won. The game will be restarted")
-				clear()
-				init_board()
-				current_state = PUT_WHITE
+				current_state = MOVE_WHITE
 			}
 		case DELETE_BLACK:
 			delete(BLACK)
 			if number_of_piece > 0 {
 				current_state = PUT_BLACK
-			} else if check_end(BLACK) != 1 {
-				current_state = MOVE_BLACK
 			} else {
-				fmt.Println("White player has won. The game will be restarted")
-				clear()
-				init_board()
-				current_state = PUT_WHITE
+				current_state = MOVE_BLACK
 			}
 		case MOVE_WHITE:
 			coord := move(WHITE)
