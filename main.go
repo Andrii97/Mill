@@ -60,9 +60,21 @@ func init_board() {
 }
 
 func print(arr [n][n]cell_state) {
-	for i := 0; i < n; i++ {
-		for j := 0; j < n; j++ {
-			fmt.Printf("%4d", arr[i][j])
+	fmt.Printf("    ")
+
+	for i := 1; i < n - 1; i++ {
+		fmt.Printf("%4d", i)
+	}
+	fmt.Printf("\n")
+	for i := 1; i < n - 1; i++ {
+		fmt.Printf("%4d", i)
+		for j := 1; j < n - 1; j++ {
+			a := arr[i][j]
+			if (a == BORDER || a == INACCESSIBLE) {
+				fmt.Printf("    ")
+			} else {
+				fmt.Printf("%4d", arr[i][j])
+			}
 		}
 		fmt.Println()
 		fmt.Println()
@@ -113,7 +125,7 @@ func check_line(w int, h int) int {
 				}
 			}
 		} else {
-			for i := 5; i < n-1; i++ {
+			for i := n/2 + 1; i < n-1; i++ {
 				if board[h][i] == board[h][w] {
 					cnt++
 				}
@@ -154,7 +166,7 @@ func put(current_player cell_state) coordinates {
 	return coord
 }
 
-func delete(current_opponent cell_state) coordinates { // todo if 3 piece are together?
+func delete(current_opponent cell_state) coordinates {
 	var color string
 	if current_opponent == BLACK {
 		color = "White"
@@ -293,46 +305,42 @@ OUTER:
 		}
 	}
 
-	/*if strings.Compare(command, "yes") != 0 {
-		return move_white()
-	}*/
-
 	coord := coordinates{new_x, new_y}
 	return coord
 }
 
-func isBlocked(x int, y int) bool {
+func is_blocked(x int, y int) bool {
 	cnt := 0
 	i := 1
 
-	for board[y][x+i] == -1 {
+	for board[y][x+i] == INACCESSIBLE {
 		i++
 	}
-	if board[y][x+i] == 0 {
+	if board[y][x+i] == EMPTY {
 		cnt++
 	}
 	i = 1
 
-	for board[y][x-i] == -1 {
+	for board[y][x-i] == INACCESSIBLE {
 		i++
 	}
-	if board[y][x-i] == 0 {
+	if board[y][x-i] == EMPTY {
 		cnt++
 	}
 	i = 1
 
-	for board[y+i][x] == -1 {
+	for board[y+i][x] == INACCESSIBLE {
 		i++
 	}
-	if board[y+i][x] == 0 {
+	if board[y+i][x] == EMPTY {
 		cnt++
 	}
 	i = 1
 
-	for board[y-i][x] == -1 {
+	for board[y-i][x] == INACCESSIBLE {
 		i++
 	}
-	if board[y-i][x] == 0 {
+	if board[y-i][x] == EMPTY {
 		cnt++
 	}
 	i = 1
@@ -352,7 +360,7 @@ func check_end(next_player cell_state) bool {
 		for j := 1; j < n-1; j++ {
 			if board[i][j] == next_player {
 				pieces_cnt++
-				if !isBlocked(j, i) {
+				if !is_blocked(j, i) {
 					moves_cnt++
 				}
 			}
@@ -369,16 +377,18 @@ func main() {
 	clear()
 	init_board()
 	current_state := PUT_WHITE
-	number_of_piece := 9
+	number_of_piece := 2
 	for current_state != CLOSE {
 		print(board)
 		if check_end(WHITE) && current_state != PUT_BLACK && current_state != PUT_WHITE {
 			fmt.Println("Black player has won. The game will be restarted.")
 			init_board()
+			print(board)
 			current_state = PUT_WHITE
 		} else if check_end(BLACK) && current_state != PUT_BLACK && current_state != PUT_WHITE {
 			fmt.Println("White player has won. The game will be restarted.")
 			init_board()
+			print(board)
 			current_state = PUT_WHITE
 		}
 		switch current_state {
