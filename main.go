@@ -377,15 +377,17 @@ func main() {
 	clear()
 	init_board()
 	current_state := PUT_WHITE
-	number_of_piece := 2
+	number_of_piece := 9
 	for current_state != CLOSE {
 		print(board)
-		if check_end(WHITE) && current_state != PUT_BLACK && current_state != PUT_WHITE {
+		if check_end(WHITE) && current_state != PUT_BLACK && current_state != PUT_WHITE && 
+		current_state != DELETE_BLACK && current_state != DELETE_WHITE{
 			fmt.Println("Black player has won. The game will be restarted.")
 			init_board()
 			print(board)
 			current_state = PUT_WHITE
-		} else if check_end(BLACK) && current_state != PUT_BLACK && current_state != PUT_WHITE {
+		} else if check_end(BLACK) && current_state != PUT_BLACK && current_state != PUT_WHITE &&
+		 current_state != DELETE_BLACK && current_state != DELETE_WHITE{
 			fmt.Println("White player has won. The game will be restarted.")
 			init_board()
 			print(board)
